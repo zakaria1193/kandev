@@ -987,7 +987,7 @@ func (m *Manager) launchBuildExecutorRequest(ctx context.Context, executionID st
 		return nil, nil, nil, fmt.Errorf("build launch environment: %w", err)
 	}
 
-	acpMcpServers, err := m.resolveMcpServersWithParams(ctx, executionProfileID(reqWithWorktree), reqWithWorktree.Metadata, agentConfig)
+	acpMcpServers, err := m.resolveMcpServersForLaunch(ctx, reqWithWorktree, agentConfig)
 	if err != nil {
 		m.logger.Warn("failed to resolve MCP servers for launch", zap.Error(err))
 	}
@@ -1062,6 +1062,8 @@ func (m *Manager) launchBuildExecutorRequest(ctx context.Context, executionID st
 		TaskTitle:                      reqWithWorktree.TaskTitle,
 		SessionID:                      launchInventorySessionID(reqWithWorktree),
 		TaskEnvironmentID:              reqWithWorktree.TaskEnvironmentID,
+		WorkspaceID:                    reqWithWorktree.WorkspaceID,
+		RepositoryIDs:                  repositoryIDsFromLaunch(reqWithWorktree),
 		WorkspaceReuseRequired:         reqWithWorktree.WorkspaceReuseRequired,
 		AgentProfileID:                 executionProfileID(reqWithWorktree),
 		OfficeAgentProfileID:           reqWithWorktree.AgentProfileID,
