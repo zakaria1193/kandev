@@ -1082,6 +1082,7 @@ func (m *Manager) ResetAgentContext(ctx context.Context, executionID string) err
 	for _, event := range execution.finishContextReset(newSessionID) {
 		m.handleAgentEventAfterContextReset(execution, event)
 	}
+	m.RequestSessionMCPReconfiguration(context.WithoutCancel(reconcileCtx), execution.SessionID)
 	return nil
 }
 
@@ -1472,6 +1473,7 @@ func (m *Manager) restartAgentProcess(
 		return fmt.Errorf("failed to mark restarted agent ready: %w", err)
 	}
 	m.eventPublisher.PublishAgentEvent(ctx, events.AgentBootReady, execution)
+	m.RequestSessionMCPReconfiguration(context.WithoutCancel(ctx), execution.SessionID)
 
 	m.logger.Info("agent process restarted with fresh context",
 		zap.String("execution_id", executionID),
