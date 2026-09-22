@@ -2534,5 +2534,15 @@
   "completionGateNoHistory": "完了に関する変更は記録されていません。",
   "completionGateAction_criteria_set": "条件を変更",
   "completionGateAction_criterion_verified": "証拠を記録",
-  "completionGateAction_completion_overridden": "完了時に例外を使用"
+  "completionGateAction_completion_overridden": "完了時に例外を使用",
+  "launchWarningTitle": "SSH ホストに到達できない可能性があります",
+  "launchWarningHost": "プローブしたホスト: {{host}}",
+  "launchWarningLastSuccess": "最後に成功: {{age}}",
+  "launchWarningNeverSucceeded": "このホストで成功したプローブの記録はありません。",
+  "launchWarningReasonConfig": "前回の試行は、接続設定が無効だったため失敗しました。",
+  "launchWarningReasonTimeout": "前回の試行はタイムアウトしました。",
+  "launchWarningReasonHostKey": "前回の試行は、ホストキーが固定されたフィンガープリントと一致しなかったため失敗しました。",
+  "launchWarningReasonAuth": "前回の試行は認証に失敗しました。",
+  "launchWarningReasonNetwork": "前回の試行はネットワークエラーで失敗しました。",
+  "launchWarningReasonUnknown": "前回の試行は不明な理由で失敗しました。"
 }
