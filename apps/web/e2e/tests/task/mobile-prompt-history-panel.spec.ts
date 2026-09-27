@@ -384,7 +384,9 @@ test.describe("Prompt history panel on mobile", () => {
     await session.waitForLoad();
     const panelsButton = testPage.getByRole("button", { name: "Panels", exact: true });
     await panelsButton.tap();
-    await testPage.getByTestId("mobile-prompt-history-option").tap();
+    const historyOption = testPage.getByTestId("mobile-prompt-history-option");
+    await expect(historyOption).toBeVisible();
+    await historyOption.tap();
     const panel = testPage.getByTestId("prompt-history-panel");
     const targetBubble = panel.locator(`[data-message-id="${targetMessage.id}"]`);
     await revealPromptHistoryTarget(testPage, panel, targetBubble);
@@ -401,9 +403,6 @@ test.describe("Prompt history panel on mobile", () => {
       }
       await route.continue();
     });
-    await panelsButton.tap();
-    await testPage.getByTestId("mobile-prompt-history-option").tap();
-    await revealPromptHistoryTarget(testPage, panel, targetBubble);
     await testPage.clock.install();
     await installTargetScrollCounter(testPage, targetMessage.id);
     await targetBubble.tap();

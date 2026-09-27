@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { test, expect } from "../../fixtures/test-base";
+import { waitForFiniteAnimations } from "../../helpers/animations";
 import { SessionPage } from "../../pages/session-page";
 import { waitForLatestSessionDone } from "../../helpers/session";
-import { waitForFiniteAnimations } from "../../helpers/animations";
 
 // @covers AC-WORKSPACES-SYMLINK-001.1, AC-WORKSPACES-SYMLINK-001.2, AC-WORKSPACES-SYMLINK-001.4
 test("identifies a symlink in Changes and the mobile file viewer", async ({
@@ -71,11 +71,13 @@ test("identifies a symlink in Changes and the mobile file viewer", async ({
     expect(markerBounds.x).toBeGreaterThanOrEqual(rowBounds.x);
     expect(markerBounds.x + markerBounds.width).toBeLessThanOrEqual(actionsBounds.x);
     await actions.tap();
-    const edit = testPage.getByRole("menuitem", { name: "Edit", exact: true });
+    const menu = testPage.getByRole("menu");
+    await expect(menu).toBeVisible();
+    const edit = menu.getByRole("menuitem", { name: "Edit", exact: true });
     await expect(edit).toBeVisible();
-    await waitForFiniteAnimations(testPage.getByRole("menu").last());
-    // The menu item has a fixed 44px touch target. Check it after the entrance
-    // animation, then tap it while the menu stays open.
+    // The menu item has a fixed 44px touch target. Wait for its entrance
+    // animation before checking its layout and tapping it while the menu stays open.
+    await waitForFiniteAnimations(menu);
     await expect(edit).toHaveCSS("min-height", "44px");
     await edit.tap({ timeout: 5_000 });
     const viewer = testPage.getByTestId("mobile-file-viewer-panel");
