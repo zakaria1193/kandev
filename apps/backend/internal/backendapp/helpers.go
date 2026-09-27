@@ -740,6 +740,7 @@ type routeParams struct {
 	addCleanup                    func(func() error)
 	repoCloner                    *repoclone.Cloner
 	version                       string
+	commit                        string
 	webInternalURL                string
 	webTitlePrefix                string
 	devMode                       bool
@@ -1511,7 +1512,7 @@ func registerSecondaryRoutes(
 			p.taskRepo,
 			p.services.Task,
 			p.agentRegistry,
-			lifecycle.NewAgentctlResolver(p.log),
+			newSSHAgentctlResolver(p),
 			p.log,
 			p.taskRepo,
 			reachabilityPoller,
@@ -1685,6 +1686,15 @@ func registerSecondaryRoutes(
 		mountOfficeRoutes(p.router, p.services.OfficeSvcs, p.authSvc, p.taskSvc, p.officeRepo, handoffSvc, handoffDeps, p.log)
 		p.log.Debug("Registered Office handlers (HTTP)")
 	}
+}
+
+func newSSHAgentctlResolver(p routeParams) *lifecycle.AgentctlResolver {
+	return lifecycle.NewAgentctlResolverWithOptions(p.log, lifecycle.AgentctlResolverOptions{
+		Version:   p.version,
+		Commit:    p.commit,
+		BundleDir: os.Getenv("KANDEV_BUNDLE_DIR"),
+		HomeDir:   p.homeDir,
+	})
 }
 
 // integrationWorkspacePrefixes are the workspace-scoped third-party

@@ -2903,6 +2903,7 @@ func buildHTTPServer(
 		addCleanup:                    addCleanup,
 		repoCloner:                    repoCloner,
 		version:                       Version,
+		commit:                        Commit,
 		webInternalURL:                cfg.Server.WebInternalURL,
 		webTitlePrefix:                cfg.Server.WebTitlePrefix,
 		devMode:                       cfg.Debug.DevMode || cfg.Debug.PprofEnabled,
