@@ -6,11 +6,11 @@ export async function openFileComment(page: Page, dialog: Locator, mobile: boole
     `[data-testid="review-file-header"][data-file-path="${DIFF_FILE}"]`,
   );
   if (mobile) {
-    await header.getByRole("button", { name: `More actions for ${DIFF_FILE}` }).tap();
-    await page
-      .getByTestId("review-file-actions-menu")
-      .getByRole("menuitem", { name: "Comment on file" })
-      .tap({ force: true });
+    const trigger = header.getByRole("button", { name: `More actions for ${DIFF_FILE}` });
+    await trigger.tap();
+    const menu = page.getByTestId("review-file-actions-menu");
+    await expect(menu).toBeVisible();
+    await menu.getByRole("menuitem", { name: "Comment on file" }).tap();
   } else {
     await header.getByRole("button", { name: "Comment on file", exact: true }).click();
   }
