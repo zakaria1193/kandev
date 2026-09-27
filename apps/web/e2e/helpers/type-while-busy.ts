@@ -35,7 +35,9 @@ export async function typeWhileBusy(page: Page, editor: Locator, text: string): 
   // the composer, so wait for the editable state before attempting interaction.
   await expect(editor).toHaveAttribute("contenteditable", "true", { timeout: 15_000 });
   for (let attempt = 0; attempt < 3; attempt++) {
-    await expect(editor).toBeEditable({ timeout: 5_000 });
+    // TipTap briefly flips this attribute off after submit; its generic editor
+    // div makes `toBeEditable` fail instead of waiting for the transition.
+    await expect(editor).toHaveAttribute("contenteditable", "true", { timeout: 5_000 });
     // The composer can replace or re-enable the editor during queue-mode
     // transitions. A locator click re-resolves the live editor before focusing
     // it; a coordinate click can land on the previous, non-editable element.
