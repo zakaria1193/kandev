@@ -136,7 +136,13 @@ test.describe("Workflow step progress", () => {
           timeout: 15_000,
         })
         .toBe(targetStep.id);
-      await expect(disclosure).toBeHidden();
+      const currentStep = trigger.getByTestId(`workflow-step-${targetStep.name}`);
+      await expect(currentStep).toHaveAttribute("aria-current", "step");
+      await expect(currentStep.locator("[data-marker-state]")).toHaveAttribute(
+        "data-marker-state",
+        "current",
+      );
+      await expect(move).toHaveCount(0);
     } finally {
       releaseMove();
       await testPage.unroute(moveRoute);
