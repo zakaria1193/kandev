@@ -157,6 +157,7 @@ export function QueuePanelHeader({
           onClick={onClear}
           title={t("chat:clearAllQueuedMessages")}
           data-testid="queue-clear-all"
+          disabled={isLoading || cancellationPending}
         >
           <IconTrash className="mr-1 h-3 w-3" />
           {t("chat:clearAll")}

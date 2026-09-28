@@ -139,8 +139,8 @@ test.describe("archived session recovery", () => {
       );
       await testPage.getByTestId("task-unarchive-button").click();
       await unarchiveResponse;
-      await expect(testPage.getByTestId("task-unarchive-button")).toHaveCount(0);
       await expect(session.recoveryResumeButton()).toBeVisible({ timeout: 30_000 });
+      await expect(testPage.getByTestId("task-unarchive-button")).toHaveCount(0);
       expect(
         sessionLaunchRequests(requests, sessionId).map((request) => request.payload.intent),
       ).toEqual([]);

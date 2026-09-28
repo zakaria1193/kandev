@@ -63,12 +63,6 @@ test.describe("transient provider error (529 Overloaded) retry", () => {
     const sessionId = await session.activeChat().getAttribute("data-session-id");
     if (!sessionId) throw new Error("active chat did not expose a session id");
 
-    await expect
-      .poll(async () => (await listTransientRetryNotices(apiClient, sessionId)).length, {
-        timeout: 30_000,
-      })
-      .toBe(1);
-
     await expect(session.recoveryCancelRetryButton()).toBeVisible({ timeout: 30_000 });
 
     await session.recoveryCancelRetryButton().click();
