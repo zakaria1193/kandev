@@ -82,16 +82,26 @@ test("task details omit native coordination controls for ordinary and configured
     const completingStep = seedData.steps.find((step) => step.complete_task_on_enter);
     if (!completingStep) throw new Error("seed workflow has no completing step");
     const stepButton = testPage.getByTestId(`workflow-step-${completingStep.name}`);
-    await expect(stepButton).toBeVisible({ timeout: 30_000 });
-    await stepButton.hover();
-    const movePopover = testPage.getByTestId("workflow-step-popover");
-    await expect(movePopover).toBeVisible();
     const blockedMove = testPage.waitForResponse(
       (response) =>
         response.url().endsWith(`/api/v1/tasks/${configuredTask.id}/move`) &&
         response.status() === 409,
     );
-    await movePopover.getByTestId("workflow-step-move-here").click();
+    if (await stepButton.isVisible()) {
+      await stepButton.hover();
+      const movePopover = testPage.getByTestId("workflow-step-popover");
+      await expect(movePopover).toBeVisible();
+      await movePopover.getByTestId("workflow-step-move-here").click();
+    } else {
+      // The responsive top bar replaces the full step list with a disclosure
+      // when its center region is constrained.
+      await testPage.getByTestId("workflow-stepper-minimal").click();
+      const targetStep = testPage
+        .getByTestId("workflow-step-disclosure")
+        .getByTestId(`workflow-step-disclosure-row-${completingStep.id}`);
+      await expect(targetStep).toBeVisible();
+      await targetStep.getByTestId("workflow-step-move-here").click();
+    }
     await blockedMove;
     await expect(testPage.getByTestId("task-move-error-banner")).toBeVisible();
     expect(coordinationReads).toEqual([]);

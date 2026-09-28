@@ -1,5 +1,4 @@
 import { test, expect } from "../../fixtures/test-base";
-import { KanbanPage } from "../../pages/kanban-page";
 import { SessionPage } from "../../pages/session-page";
 
 test.describe("Archive task redirect", () => {
@@ -17,7 +16,7 @@ test.describe("Archive task redirect", () => {
     test.setTimeout(90_000);
 
     // Use distinct descriptions so we can verify the chat panel switches content.
-    await apiClient.createTaskWithAgent(
+    const taskA = await apiClient.createTaskWithAgent(
       seedData.workspaceId,
       "Archive Task A",
       seedData.agentProfileId,
@@ -41,18 +40,9 @@ test.describe("Archive task redirect", () => {
       },
     );
 
-    // --- Navigate to kanban and wait for both task cards ---
-    const kanban = new KanbanPage(testPage);
-    await kanban.goto();
-
-    const cardA = kanban.taskCardByTitle("Archive Task A");
-    const cardB = kanban.taskCardByTitle("Archive Task B");
-    await expect(cardA).toBeVisible({ timeout: 30_000 });
-    await expect(cardB).toBeVisible({ timeout: 30_000 });
-
-    // Click task A to open its session detail page
-    await cardA.click();
-    await expect(testPage).toHaveURL(/\/t\//, { timeout: 15_000 });
+    // Open the seeded route directly; Kanban cards can be replaced while the
+    // feed refreshes, but opening the task is not the behavior under test.
+    await testPage.goto(`/t/${taskA.id}`);
 
     const session = new SessionPage(testPage);
     await session.waitForLoad();
