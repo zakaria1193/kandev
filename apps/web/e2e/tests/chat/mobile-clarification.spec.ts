@@ -31,6 +31,9 @@ test.describe("Mobile clarification multiline answer", () => {
     await composer.pressSequentially("Queue this from phone 1", { timeout: 30_000 });
     await expect(composer).toContainText("Queue this from phone 1");
     await expect(session.clarificationOverlay()).toBeVisible();
+    await expect(testPage.getByText("Kandev update available", { exact: true })).toBeHidden({
+      timeout: 10_000,
+    });
     const submit = testPage.getByTestId("submit-message-button");
     const nav = testPage.getByTestId("session-mobile-bottom-nav");
     const [submitBox, navBox] = await Promise.all([submit.boundingBox(), nav.boundingBox()]);
