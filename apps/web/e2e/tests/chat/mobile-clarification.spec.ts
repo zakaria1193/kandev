@@ -45,7 +45,7 @@ test.describe("Mobile clarification multiline answer", () => {
 
     const overlay = session.clarificationOverlay();
     await expect(overlay).toBeVisible({ timeout: 30_000 });
-    await expect(session.clarificationCustomInput()).toHaveCount(0);
+    await expect(overlay.getByTestId("clarification-custom-input")).toHaveCount(0);
     if (prCapture.capturing) await waitForFiniteAnimations(overlay);
     await prCapture.screenshot("mobile-clarification-choice-only", {
       caption: "Mobile clarification offers only the choices allowed by Codex",
