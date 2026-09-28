@@ -1,4 +1,5 @@
 import { test, expect } from "../fixtures/test-base";
+import { waitForFiniteAnimations } from "../helpers/animations";
 import { expectControlHeight } from "../helpers/control-sizing";
 import { AutomationsPage } from "../pages/automations-page";
 
@@ -174,6 +175,7 @@ test.describe("Automations settings page", () => {
     await automations.nameInput.fill("Unsaved Draft Name");
     await automations.deleteButton.click();
     await expect(automations.deleteConfirmation).toBeVisible();
+    await waitForFiniteAnimations(automations.deleteConfirmation);
     const cancel = automations.deleteConfirmation.getByRole("button", {
       name: "Cancel",
       exact: true,

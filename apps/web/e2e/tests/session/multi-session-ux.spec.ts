@@ -3,6 +3,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { test, expect } from "../../fixtures/test-base";
+import { KanbanPage } from "../../pages/kanban-page";
 import { SessionPage } from "../../pages/session-page";
 import { waitForStableActiveSession } from "../../helpers/session-store";
 
