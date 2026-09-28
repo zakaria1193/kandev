@@ -298,3 +298,9 @@ When a change is scoped to a single subtree, update the scoped `AGENTS.md` inste
 ## Remote cloud environment
 
 For developing in ephemeral cloud VMs (Cursor Cloud, Codex, GitHub Codespaces, etc.), see [`docs/remote-cloud-environment.md`](docs/remote-cloud-environment.md) — covers runtime requirements, generated-file gotchas, dev-mode setup, key commands, and Firecracker-specific caveats.
+
+---
+
+## Fork
+
+This repository is a fork. Before changing anything, read [`FORK.md`](FORK.md): how to keep changes small enough to rebase on upstream often.
