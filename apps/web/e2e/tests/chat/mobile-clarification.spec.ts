@@ -96,10 +96,8 @@ test.describe("Mobile clarification multiline answer", () => {
         occurrence_id: "mobile-clarification-hit-target",
       },
     );
-    const updateToast = testPage
-      .getByTestId("toast-message")
-      .filter({ hasText: "Kandev update available" })
-      .last();
+    const updateToast = testPage.getByTestId("toast-message").filter({ hasText: "v9.9.9-e2e" });
+    await expect(updateToast).toHaveCount(1);
     await expect(updateToast).toContainText("Kandev update available");
     await expect(updateToast).toContainText("Kandev v9.9.9-e2e is available.");
     const submit = testPage.getByTestId("submit-message-button");
