@@ -192,9 +192,10 @@ export class SessionPage {
     while (Date.now() - start < timeout) {
       const remaining = timeout - (Date.now() - start);
       const now = Date.now();
+      const reloadReadinessBudget = Math.min(2_000, Math.floor(attemptTimeout / 2));
       // Re-drive SSR hydration once per attemptTimeout slice while budget remains
       // for the reloaded page to settle.
-      if (now - lastReloadAt >= attemptTimeout && remaining > attemptTimeout) {
+      if (now - lastReloadAt >= attemptTimeout && remaining > reloadReadinessBudget) {
         lastReloadAt = now;
         await this.page.reload();
       }

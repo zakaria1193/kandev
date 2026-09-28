@@ -89,6 +89,7 @@ test("opens the shared change workflow form from the phone command palette", asy
   const destinationStep = await apiClient.createWorkflowStep(destination.id, "Incoming", 0);
   await testPage.reload();
 
+  await expect(testPage.getByTestId("mobile-task-picker-trigger")).toBeVisible();
   await testPage.keyboard.press("Control+k");
   const palette = testPage.getByRole("dialog").filter({ has: testPage.getByRole("combobox") });
   const search = palette.getByRole("combobox");

@@ -110,7 +110,22 @@ test("auto-hides empty columns without changing drag destinations", async ({
   await expect(autoHideToggle).toHaveAttribute("aria-checked", "false");
   await autoHideToggle.click();
   await expect(autoHideToggle).toHaveAttribute("aria-checked", "true");
+  await expect
+    .poll(async () => {
+      const { settings } = await apiClient.getUserSettings();
+      return settings.workflow_ids_with_auto_hide_empty_steps?.includes(workflow.id) ?? false;
+    })
+    .toBe(true);
+  await expect(kanban.columnByStepId(autoHiddenStep.id)).toHaveCount(0);
   await testPage.getByTestId(`columns-menu-step-${manuallyHiddenStep.id}`).click();
+  await expect
+    .poll(async () => {
+      const { settings } = await apiClient.getUserSettings();
+      return (
+        settings.kanban_hidden_step_ids?.[workflow.id]?.includes(manuallyHiddenStep.id) ?? false
+      );
+    })
+    .toBe(true);
   await closeColumnsMenu(testPage, workflow.id);
 
   await expect(kanban.columnByStepId(sourceStep.id)).toBeVisible();
