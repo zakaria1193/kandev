@@ -17,13 +17,15 @@ test.describe("mobile: transient provider error retry", () => {
     const sessionId = await session.activeChat().getAttribute("data-session-id");
     if (!sessionId) throw new Error("active chat did not expose a session id");
 
-    await session.sendMessageViaButton("/overloaded:9");
-    await expect
-      .poll(async () => (await listTransientRetryNotices(apiClient, sessionId)).length, {
-        timeout: 30_000,
-        message: "the transient retry notice should be persisted",
-      })
-      .toBe(1);
+    await Promise.all([
+      session.sendMessageViaButton("/overloaded:9"),
+      expect
+        .poll(async () => (await listTransientRetryNotices(apiClient, sessionId)).length, {
+          timeout: 30_000,
+          message: "the transient retry notice should be persisted",
+        })
+        .toBe(1),
+    ]);
     const [retryNotice] = await listTransientRetryNotices(apiClient, sessionId);
     if (!retryNotice) throw new Error("the persisted transient retry notice was not found");
     const retryNoticeId = retryNotice.id;

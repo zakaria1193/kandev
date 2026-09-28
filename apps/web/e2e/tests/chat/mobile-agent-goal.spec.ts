@@ -62,12 +62,16 @@ test.describe("mobile agent goal visibility", () => {
 
     await waitForQuickChatDirectInput(dialog);
     await sendQuickChatMessage(dialog, testPage, "/e2e:goal-active");
-    await expect(dialog.getByTestId("agent-goal-chip")).toBeVisible({ timeout: 30_000 });
-    await expect(
-      dialog.getByText("The provider goal remains active after the thread becomes idle.", {
-        exact: false,
-      }),
-    ).toBeVisible({ timeout: 30_000 });
+    const activeGoalChip = dialog.getByTestId("agent-goal-chip");
+    await expect(activeGoalChip).toBeVisible({ timeout: 30_000 });
+    await activeGoalChip.tap();
+    const activeGoalDrawer = testPage.getByTestId("agent-goal-drawer-content");
+    await expect(activeGoalDrawer).toBeVisible();
+    await expect(activeGoalDrawer.getByTestId("agent-goal-objective")).toContainText(
+      "Coordinate contributor PR reviews",
+    );
+    await testPage.getByRole("button", { name: "Close goal details" }).tap();
+    await expect(activeGoalDrawer).toBeHidden();
 
     await waitForQuickChatDirectInput(dialog);
     await sendQuickChatMessage(dialog, testPage, "/e2e:goal-clear");

@@ -54,8 +54,13 @@ test.describe("adaptive terminal themes", () => {
 
     await session.typeInTerminal("seq 1 500");
     await expect.poll(() => readTerminalHostBuffer(host)).toContain("500");
+    await expect
+      .poll(() => readTerminalViewportY(host), {
+        timeout: 10_000,
+        message: "the terminal should scroll after the full output reaches xterm",
+      })
+      .toBeGreaterThan(0);
     const bottomViewportY = await readTerminalViewportY(host);
-    expect(bottomViewportY).toBeGreaterThan(0);
     const runningMarker = "TERMINAL_THEME_RUNNING";
     await testPage.keyboard.type(`sleep 10; printf ${runningMarker}`);
     await testPage.keyboard.press("Enter");
