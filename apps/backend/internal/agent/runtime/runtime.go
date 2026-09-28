@@ -34,9 +34,16 @@ type RouteOverride = lifecycle.RouteOverride
 type AgentStreamEventPayload = lifecycle.AgentStreamEventPayload
 type AgentExecution = lifecycle.AgentExecution
 type CachedModeState = lifecycle.CachedModeState
+type CursorMCPAuthenticationSpec = lifecycle.CursorMCPAuthenticationSpec
+type CursorMCPRetryResult = lifecycle.CursorMCPRetryResult
 
 // ErrNoExecutionForSession reports that a session has no live execution.
-var ErrNoExecutionForSession = lifecycle.ErrNoExecutionForSession
+var (
+	ErrNoExecutionForSession              = lifecycle.ErrNoExecutionForSession
+	ErrCursorMCPAuthenticationUnsupported = lifecycle.ErrCursorMCPAuthenticationUnsupported
+	ErrCursorMCPRecoverySessionBusy       = lifecycle.ErrCursorMCPRecoverySessionBusy
+	ErrCursorMCPRecoveryUnavailable       = lifecycle.ErrCursorMCPRecoveryUnavailable
+)
 
 // SessionExecutionControl is the runtime seam for looking up an execution by
 // session and applying a provider-supported session mode.
