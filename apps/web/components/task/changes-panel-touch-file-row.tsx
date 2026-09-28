@@ -77,6 +77,7 @@ function TouchFileRowActions({
 >) {
   const { t } = useTranslation();
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const openAtTouchStart = useRef(false);
   const [open, setOpen] = useState(false);
   const StageIcon = file.staged ? IconMinus : IconPlus;
   return (
@@ -89,11 +90,14 @@ function TouchFileRowActions({
           className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
           onPointerDown={(event) => {
             event.stopPropagation();
-            if (event.pointerType === "touch") event.preventDefault();
+            if (event.pointerType === "touch") {
+              openAtTouchStart.current = open;
+              event.preventDefault();
+            }
           }}
           onPointerUp={(event) => {
             event.stopPropagation();
-            if (event.pointerType === "touch") setOpen((current) => !current);
+            if (event.pointerType === "touch") setOpen(!openAtTouchStart.current);
           }}
           onClick={(event) => {
             event.stopPropagation();

@@ -7,6 +7,7 @@ import { IconLayoutList } from "@tabler/icons-react";
 import {
   DndContext,
   KeyboardSensor,
+  MeasuringStrategy,
   PointerSensor,
   closestCenter,
   useSensor,
@@ -748,6 +749,7 @@ function QueuePanel({
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}

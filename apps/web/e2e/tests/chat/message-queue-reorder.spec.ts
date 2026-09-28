@@ -92,7 +92,7 @@ async function expectRelativeOrder(panel: Locator, ...contents: string[]): Promi
 }
 
 test.describe("Queue reorder", () => {
-  test.describe.configure({ retries: 1 });
+  test.describe.configure({ retries: 0 });
 
   test("drag-and-drop reorders queued messages and persists the order", async ({
     testPage,

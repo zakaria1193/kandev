@@ -85,6 +85,7 @@ test("identifies a symlink in Changes and the mobile file viewer", async ({
     await expect(edit).toBeVisible();
     await edit.tap({ timeout: 5_000 });
     await expect(viewer).toBeVisible();
+    await expect(menu).toBeHidden();
     await expect(viewer.getByTestId("symlink-indicator")).toHaveText("Symlink");
     expect(
       await testPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),

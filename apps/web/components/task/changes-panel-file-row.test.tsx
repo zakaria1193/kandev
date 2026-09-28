@@ -329,6 +329,22 @@ describe("FileRow hover swap (stats <-> actions occupy same cell)", () => {
     expect(queryByTitle("Stage file")).toBeNull();
   });
 
+  it("toggles the phone menu from the touch gesture's starting state", async () => {
+    responsive.isFinePointer = false;
+    const { getByRole, queryByRole } = renderRow("file.go");
+    const trigger = getByRole("button", { name: moreActionsLabel });
+
+    fireEvent.pointerDown(trigger, { pointerType: "touch", button: 0 });
+    fireEvent.pointerUp(trigger, { pointerType: "touch", button: 0 });
+    expect(await queryByRole("menu")).not.toBeNull();
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
+    fireEvent.pointerDown(trigger, { pointerType: "touch", button: 0 });
+    fireEvent.pointerUp(trigger, { pointerType: "touch", button: 0 });
+    await waitFor(() => expect(queryByRole("menu")).toBeNull());
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
   it("keeps pending feedback in the identity and disables staging in the menu", async () => {
     responsive.isFinePointer = false;
     const { container, getByTitle, getByRole, findByRole } = render(
