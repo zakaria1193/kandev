@@ -313,6 +313,7 @@ test("reveals and collapses immediately with reduced motion", async ({
   await testPage.goto("/threads");
   const tile = testPage.getByTestId(`thread-column-${task.id}`);
   const editor = tile.getByTestId("chat-input-editor");
+  await expect(editor).toBeAttached();
   await expect(editor).toBeHidden();
   await tile.focus();
   await expect(editor).toBeVisible();

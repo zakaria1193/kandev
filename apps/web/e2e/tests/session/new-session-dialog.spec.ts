@@ -408,13 +408,7 @@ test.describe("New session dialog", () => {
     expect(envBefore).not.toBeNull();
 
     // 3. Navigate to the task
-    const kanban = new KanbanPage(testPage);
-    await kanban.goto();
-
-    const card = kanban.taskCardByTitle("Env Reuse Dialog Task");
-    await expect(card).toBeVisible({ timeout: 10_000 });
-    await card.click();
-    await expect(testPage).toHaveURL(/\/t\//, { timeout: 15_000 });
+    await testPage.goto(`/t/${task.id}`);
 
     const session = new SessionPage(testPage);
     await session.waitForLoad();

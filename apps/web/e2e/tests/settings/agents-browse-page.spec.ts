@@ -65,6 +65,15 @@ test.describe("Agents browse page", () => {
   test("renders the heading and install cards statically, without a collapsible toggle", async ({
     testPage,
   }) => {
+    // Capability revalidation can start from the server-rendered catalog
+    // before the test seeds its own fixture. Keep every read on that fixture
+    // so an in-flight response cannot replace the catalog during assertions.
+    await testPage.route("**/api/v1/agents/available", async (route) => {
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify(AVAILABLE_AGENTS),
+      });
+    });
     await testPage.goto("/settings/agents/browse");
 
     const heading = testPage.getByRole("heading", { name: "Browse available agents" });

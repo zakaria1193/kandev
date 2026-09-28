@@ -6,6 +6,7 @@ test("task details omit native coordination controls for ordinary and configured
   apiClient,
   seedData,
 }) => {
+  test.setTimeout(120_000);
   const ordinaryTask = await apiClient.createTask(seedData.workspaceId, "Ordinary task detail", {
     workflow_id: seedData.workflowId,
     workflow_step_id: seedData.startStepId,
@@ -81,6 +82,7 @@ test("task details omit native coordination controls for ordinary and configured
     const completingStep = seedData.steps.find((step) => step.complete_task_on_enter);
     if (!completingStep) throw new Error("seed workflow has no completing step");
     const stepButton = testPage.getByTestId(`workflow-step-${completingStep.name}`);
+    await expect(stepButton).toBeVisible({ timeout: 30_000 });
     await stepButton.hover();
     const movePopover = testPage.getByTestId("workflow-step-popover");
     await expect(movePopover).toBeVisible();

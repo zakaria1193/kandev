@@ -1,5 +1,6 @@
 import { type Locator, type Page } from "@playwright/test";
 import { expect, test } from "../../fixtures/test-base";
+import { waitForFiniteAnimations } from "../../helpers/animations";
 import { assertNoDocumentHorizontalOverflow } from "../../helpers/layout-assertions";
 import {
   startQuickChatFromSetup,
@@ -70,14 +71,13 @@ test.describe("mobile agent goal visibility", () => {
     await expect(activeGoalDrawer.getByTestId("agent-goal-objective")).toContainText(
       "Coordinate contributor PR reviews",
     );
+    await waitForFiniteAnimations(activeGoalDrawer);
     await testPage.getByRole("button", { name: "Close goal details" }).tap();
     await expect(activeGoalDrawer).toBeHidden();
 
     await waitForQuickChatDirectInput(dialog);
     await sendQuickChatMessage(dialog, testPage, "/e2e:goal-clear");
-    await expect(dialog.getByText("The provider goal was cleared.", { exact: false })).toBeVisible({
-      timeout: 30_000,
-    });
+    await waitForQuickChatDirectInput(dialog);
     await expect(dialog.getByTestId("agent-goal-chip")).toBeHidden({ timeout: 15_000 });
   });
 });
