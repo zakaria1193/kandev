@@ -337,6 +337,7 @@ function FileDeleteConfirmation({
     <MobileActionConfirmation
       {...actions}
       targetKey={path}
+      useMobileSurfaceForCoarsePointer
       subject={path.includes("/") ? path : undefined}
       focusReturnRef={focusReturnRef}
       fallback={

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   IconArrowBackUp,
   IconCopy,
@@ -274,12 +274,6 @@ function MobileFileActionsMenu(props: FileDiffToolbarProps) {
   const [open, setOpen] = useState(false);
   const commentSelectedRef = useRef(false);
 
-  useEffect(() => {
-    if (open || !commentSelectedRef.current) return;
-    commentSelectedRef.current = false;
-    requestAnimationFrame(() => onCommentFile?.());
-  }, [onCommentFile, open]);
-
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -298,6 +292,12 @@ function MobileFileActionsMenu(props: FileDiffToolbarProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
+        onCloseAutoFocus={(event) => {
+          if (!commentSelectedRef.current) return;
+          event.preventDefault();
+          commentSelectedRef.current = false;
+          requestAnimationFrame(() => onCommentFile?.());
+        }}
         data-testid="review-file-actions-menu"
         aria-label={t("review:actionsFor", { filePath })}
         align="end"

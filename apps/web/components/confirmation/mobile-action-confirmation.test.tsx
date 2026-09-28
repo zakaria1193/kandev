@@ -17,10 +17,12 @@ function Harness({
   onConfirm = vi.fn(),
   completionPolicy,
   targetKey = "A",
+  useMobileSurfaceForCoarsePointer = false,
 }: {
   onConfirm?: () => void | Promise<void>;
   completionPolicy?: "await-with-retry";
   targetKey?: string;
+  useMobileSurfaceForCoarsePointer?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -34,6 +36,7 @@ function Harness({
         onOpenChange={setOpen}
         targetKey={targetKey}
         completionPolicy={completionPolicy}
+        useMobileSurfaceForCoarsePointer={useMobileSurfaceForCoarsePointer}
         title={DIALOG_TITLE}
         subject="A"
         description="This cannot be undone."
@@ -100,24 +103,33 @@ it("cancels crossing the phone boundary and leaves the non-phone fallback unchan
   expect(onConfirm).not.toHaveBeenCalled();
 });
 
-it("keeps coarse-pointer tablet confirmations touch-accessible", () => {
+it("keeps the supplied fallback on coarse-pointer tablets by default", () => {
   viewport.isMobile = false;
   viewport.isFinePointer = false;
   render(<Harness />);
+  fireEvent.click(screen.getByRole("button", { name: "Remove A" }));
+  expect(screen.getByText(DESKTOP_CONFIRMATION)).toBeTruthy();
+  expect(screen.queryByRole("dialog", { name: DIALOG_TITLE })).toBeNull();
+});
+
+it("can opt coarse-pointer tablets into the touch drawer", () => {
+  viewport.isMobile = false;
+  viewport.isFinePointer = false;
+  render(<Harness useMobileSurfaceForCoarsePointer />);
   fireEvent.click(screen.getByRole("button", { name: "Remove A" }));
   expect(screen.getByRole("dialog", { name: DIALOG_TITLE }).getAttribute("data-slot")).toBe(
     "drawer-content",
   );
 });
 
-it("cancels an open confirmation when the pointer affordance changes", () => {
+it("cancels when an opted-in confirmation crosses its touch-surface boundary", () => {
   viewport.isMobile = false;
   viewport.isFinePointer = true;
-  const { rerender } = render(<Harness />);
+  const { rerender } = render(<Harness useMobileSurfaceForCoarsePointer />);
   fireEvent.click(screen.getByRole("button", { name: "Remove A" }));
   expect(screen.getByText(DESKTOP_CONFIRMATION)).toBeTruthy();
   viewport.isFinePointer = false;
-  rerender(<Harness />);
+  rerender(<Harness useMobileSurfaceForCoarsePointer />);
   expect(screen.queryByRole("dialog", { name: DIALOG_TITLE })).toBeNull();
   expect(screen.queryByText(DESKTOP_CONFIRMATION)).toBeNull();
 });
