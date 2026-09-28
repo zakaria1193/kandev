@@ -162,6 +162,10 @@ func applyStartModelPolicy(
 	}
 
 	if !containsModel(advertised, policy.Model) {
+		// fork(unlisted-model): try a model the CLI accepts but the catalog omits.
+		if applied, ok := tryUnlistedModel(ctx, log, applier, policy, decision); ok {
+			return applied, nil
+		}
 		if policy.RequireExactModel {
 			return unavailableStartModel(state, policy, ModelSelectionReasonRequestedNotAdvertised)
 		}
