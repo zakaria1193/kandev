@@ -63,6 +63,7 @@ test("identifies a symlink in Changes and the mobile file viewer", async ({
     await expect(row).toBeVisible({ timeout: 20_000 });
     await expect(row.getByTestId("symlink-indicator")).toBeVisible();
     const actions = row.getByRole("button", { name: "Show more actions", exact: true });
+    const viewer = testPage.getByTestId("mobile-file-viewer-panel");
     const actionsBounds = (await actions.boundingBox())!;
     expect(actionsBounds.height).toBeGreaterThanOrEqual(44);
     expect(actionsBounds.width).toBeGreaterThanOrEqual(44);
@@ -73,6 +74,7 @@ test("identifies a symlink in Changes and the mobile file viewer", async ({
     await actions.tap();
     const menu = testPage.getByRole("menu");
     await expect(menu).toBeVisible();
+    await expect(viewer).not.toBeVisible();
     const edit = menu.getByRole("menuitem", { name: "Edit", exact: true });
     await expect(edit).toBeVisible();
     // The menu item has a fixed 44px touch target. Wait for its entrance
@@ -82,7 +84,6 @@ test("identifies a symlink in Changes and the mobile file viewer", async ({
     await expect(menu).toBeVisible();
     await expect(edit).toBeVisible();
     await edit.tap({ timeout: 5_000 });
-    const viewer = testPage.getByTestId("mobile-file-viewer-panel");
     await expect(viewer).toBeVisible();
     await expect(viewer.getByTestId("symlink-indicator")).toHaveText("Symlink");
     expect(

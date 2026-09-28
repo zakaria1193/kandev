@@ -68,11 +68,19 @@ identity. Menu events stop propagation so actions cannot open the diff. Pending
 staging uses the existing per-file pending flag. Discard passes the persistent
 ellipsis trigger as its confirmation anchor, outside the transient menu.
 
+For touch pointer input, the action component controls its ephemeral open state:
+it prevents the trigger's pointer-down default, toggles the menu once on
+pointer-up, and stops propagation through the synthesized click. This keeps the
+menu available through its entrance animation without changing keyboard or
+fine-pointer activation. Selection, outside interaction, and Escape continue to
+close the menu through the shared DropdownMenu behavior.
+
 This follows the mobile UI language's visible contextual menu pattern and
 the shipped `MobileChangesPanel` full-height content surface. Primary content
 stays inline because scanning files is frequent; temporary action choices
-use the existing bottom menu. No new state, persistence, scroll owner, or
-viewport container is introduced. Fine-pointer desktop composition is retained.
+use the existing bottom menu. The menu's open state is transient and is not
+persisted. No file-list preference, scroll owner, or viewport container is
+introduced. Fine-pointer desktop composition is retained.
 
 ## Responsive composition
 
