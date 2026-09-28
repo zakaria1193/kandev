@@ -79,6 +79,8 @@ test("identifies a symlink in Changes and the mobile file viewer", async ({
     // animation before checking its layout and tapping it while the menu stays open.
     await waitForFiniteAnimations(menu);
     await expect(edit).toHaveCSS("min-height", "44px");
+    await expect(menu).toBeVisible();
+    await expect(edit).toBeVisible();
     await edit.tap({ timeout: 5_000 });
     const viewer = testPage.getByTestId("mobile-file-viewer-panel");
     await expect(viewer).toBeVisible();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   IconArrowBackUp,
@@ -77,16 +77,27 @@ function TouchFileRowActions({
 >) {
   const { t } = useTranslation();
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
   const StageIcon = file.staged ? IconMinus : IconPlus;
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           ref={triggerRef}
           type="button"
           aria-label={t("common:showMoreActions")}
           className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
-          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            if (event.pointerType === "touch") event.preventDefault();
+          }}
+          onPointerUp={(event) => {
+            event.stopPropagation();
+            if (event.pointerType === "touch") setOpen((current) => !current);
+          }}
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
         >
           <IconDots className="size-4" />
         </button>

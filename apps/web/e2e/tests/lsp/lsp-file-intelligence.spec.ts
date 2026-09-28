@@ -451,12 +451,9 @@ test.describe("LSP file intelligence", () => {
     await testPage.keyboard.press("Control+Z");
     await testPage.keyboard.press("Control+Z");
 
-    await testPage
-      .locator(".monaco-editor:visible .view-line")
-      .nth(2)
-      .hover({
-        position: { x: 80, y: 8 },
-      });
+    const hoverTarget = editor.getByText("greeting0", { exact: true });
+    await expect(hoverTarget).toHaveCount(1);
+    await hoverTarget.hover();
     await expectFakeLspEvent(
       backend,
       (event) => event.event === "message" && event.method === "textDocument/hover",
