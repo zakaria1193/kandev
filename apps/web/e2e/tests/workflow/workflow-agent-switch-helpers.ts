@@ -5,8 +5,9 @@ export type WorkflowTaskSessions = Awaited<ReturnType<ApiClient["listTaskSession
 
 export async function createWorkflowAgentProfiles(apiClient: ApiClient) {
   const { agents } = await apiClient.listAgents();
-  if (agents.length === 0) throw new Error("no agents available in test fixtures");
-  const agentId = agents[0].id;
+  const mockAgent = agents.find((agent) => agent.name === "mock-agent");
+  if (!mockAgent) throw new Error("mock-agent unavailable in test fixtures");
+  const agentId = mockAgent.id;
   const profileA = await apiClient.createAgentProfile(agentId, "Profile A (fast)", {
     model: "mock-fast",
   });
