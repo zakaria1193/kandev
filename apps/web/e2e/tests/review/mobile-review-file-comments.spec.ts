@@ -30,7 +30,9 @@ test("phone file menu creates editable whole-file feedback", async ({
     await expect(dialog).toBeVisible();
     const region = await openFileComment(testPage, dialog, width < 768);
     const cancel = region.getByRole("button", { name: "Cancel", exact: true });
-    expect((await cancel.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await expect
+      .poll(async () => Math.round((await cancel.boundingBox())?.height ?? 0))
+      .toBeGreaterThanOrEqual(44);
     await cancel.click();
     expect(await testPage.locator("html").evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
       true,

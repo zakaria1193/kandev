@@ -32,13 +32,13 @@ export type MobileActionConfirmationProps = Omit<
 
 /** Keep this adapter mounted across responsive branches so a boundary change cancels the request. */
 export function MobileActionConfirmation(props: MobileActionConfirmationProps) {
-  const { isMobile, changed } = useConfirmationBoundary(
+  const { isMobile, isFinePointer, changed } = useConfirmationBoundary(
     props.open,
     props.targetKey,
     props.onOpenChange,
   );
   if (changed || !props.open) return null;
-  if (!isMobile) return props.fallback ?? null;
+  if (!isMobile && isFinePointer) return props.fallback ?? null;
   return <OpenMobileConfirmation {...props} />;
 }
 
@@ -48,16 +48,18 @@ export function useConfirmationBoundary(
   onOpenChange: (open: boolean) => void,
 ) {
   const viewport = useResponsiveBreakpoint();
-  const { isMobile } = viewport;
-  const previous = useRef({ isMobile, targetKey, open });
+  const { isMobile, isFinePointer } = viewport;
+  const previous = useRef({ isMobile, isFinePointer, targetKey, open });
   const changed =
     previous.current.open &&
     open &&
-    (previous.current.isMobile !== isMobile || previous.current.targetKey !== targetKey);
+    (previous.current.isMobile !== isMobile ||
+      previous.current.isFinePointer !== isFinePointer ||
+      previous.current.targetKey !== targetKey);
   useLayoutEffect(() => {
-    previous.current = { isMobile, targetKey, open };
+    previous.current = { isMobile, isFinePointer, targetKey, open };
     if (changed && open) onOpenChange(false);
-  });
+  }, [changed, isFinePointer, isMobile, onOpenChange, open, targetKey]);
   return { ...viewport, changed };
 }
 

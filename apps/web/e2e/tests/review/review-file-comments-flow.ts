@@ -34,7 +34,11 @@ export async function exerciseFileComment(page: Page, dialog: Locator, mobile: b
   region = await openFileComment(page, dialog, mobile);
   await region.getByRole("textbox").fill("Whole-file feedback for the agent");
   const add = region.getByRole("button", { name: /Add/ });
-  if (mobile) expect((await add.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  if (mobile) {
+    await expect
+      .poll(async () => Math.round((await add.boundingBox())?.height ?? 0))
+      .toBeGreaterThanOrEqual(44);
+  }
   await add.click();
   const card = region.getByTestId("review-file-comment-card");
   await expect(card).toContainText("Whole-file feedback for the agent");

@@ -3,11 +3,14 @@ import { cleanup, fireEvent, render, screen, waitFor, act } from "@testing-libra
 import { afterEach, expect, it, vi } from "vitest";
 import { MobileActionConfirmation } from "./mobile-action-confirmation";
 
-const viewport = vi.hoisted(() => ({ isMobile: true }));
+const viewport = vi.hoisted(() => ({ isMobile: true, isFinePointer: false }));
+const DIALOG_TITLE = "Delete item?";
+const DESKTOP_CONFIRMATION = "Desktop confirmation";
 vi.mock("@/hooks/use-responsive-breakpoint", () => ({ useResponsiveBreakpoint: () => viewport }));
 afterEach(() => {
   cleanup();
   viewport.isMobile = true;
+  viewport.isFinePointer = false;
 });
 
 function Harness({
@@ -31,14 +34,14 @@ function Harness({
         onOpenChange={setOpen}
         targetKey={targetKey}
         completionPolicy={completionPolicy}
-        title="Delete item?"
+        title={DIALOG_TITLE}
         subject="A"
         description="This cannot be undone."
         cancelLabel="Cancel"
         confirmLabel="Delete"
         onConfirm={onConfirm}
         focusReturnRef={trigger}
-        fallback={open ? <div>Desktop confirmation</div> : null}
+        fallback={open ? <div>{DESKTOP_CONFIRMATION}</div> : null}
       />
     </>
   );
@@ -48,7 +51,7 @@ it("uses a standalone drawer and returns focus on cancellation", async () => {
   render(<Harness />);
   const trigger = screen.getByRole("button", { name: "Remove A" });
   fireEvent.click(trigger);
-  expect(screen.getByRole("dialog", { name: "Delete item?" }).getAttribute("data-slot")).toBe(
+  expect(screen.getByRole("dialog", { name: DIALOG_TITLE }).getAttribute("data-slot")).toBe(
     "drawer-content",
   );
   await waitFor(() =>
@@ -88,12 +91,35 @@ it("cancels crossing the phone boundary and leaves the non-phone fallback unchan
   fireEvent.click(screen.getByRole("button", { name: "Remove A" }));
   expect(screen.getByRole("group")).toBeTruthy();
   viewport.isMobile = false;
+  viewport.isFinePointer = true;
   rerender(<Harness onConfirm={onConfirm} />);
   expect(screen.queryByRole("group")).toBeNull();
-  expect(screen.queryByText("Desktop confirmation")).toBeNull();
+  expect(screen.queryByText(DESKTOP_CONFIRMATION)).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Remove A" }));
-  expect(screen.getByText("Desktop confirmation")).toBeTruthy();
+  expect(screen.getByText(DESKTOP_CONFIRMATION)).toBeTruthy();
   expect(onConfirm).not.toHaveBeenCalled();
+});
+
+it("keeps coarse-pointer tablet confirmations touch-accessible", () => {
+  viewport.isMobile = false;
+  viewport.isFinePointer = false;
+  render(<Harness />);
+  fireEvent.click(screen.getByRole("button", { name: "Remove A" }));
+  expect(screen.getByRole("dialog", { name: DIALOG_TITLE }).getAttribute("data-slot")).toBe(
+    "drawer-content",
+  );
+});
+
+it("cancels an open confirmation when the pointer affordance changes", () => {
+  viewport.isMobile = false;
+  viewport.isFinePointer = true;
+  const { rerender } = render(<Harness />);
+  fireEvent.click(screen.getByRole("button", { name: "Remove A" }));
+  expect(screen.getByText(DESKTOP_CONFIRMATION)).toBeTruthy();
+  viewport.isFinePointer = false;
+  rerender(<Harness />);
+  expect(screen.queryByRole("dialog", { name: DIALOG_TITLE })).toBeNull();
+  expect(screen.queryByText(DESKTOP_CONFIRMATION)).toBeNull();
 });
 
 it("allows a newly opened request to supply its target after the idle state", () => {
@@ -108,7 +134,7 @@ it("allows a newly opened request to supply its target after the idle state", ()
           onOpenChange={(open) => {
             if (!open) setTarget(null);
           }}
-          title="Delete item?"
+          title={DIALOG_TITLE}
           subject={target}
           cancelLabel="Cancel"
           confirmLabel="Delete"
@@ -119,7 +145,7 @@ it("allows a newly opened request to supply its target after the idle state", ()
   }
   render(<SelectedTarget />);
   fireEvent.click(screen.getByRole("button", { name: "Choose A" }));
-  expect(screen.getByRole("dialog", { name: "Delete item?" })).toBeTruthy();
+  expect(screen.getByRole("dialog", { name: DIALOG_TITLE })).toBeTruthy();
 });
 
 it("keeps an opted-in request busy and retries rejection without duplicate dispatch", async () => {

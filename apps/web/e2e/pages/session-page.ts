@@ -1380,6 +1380,9 @@ export class SessionPage {
     const xterm = this.activePanel("terminal-panel").locator(".xterm");
     await expect(xterm).toBeVisible();
     await xterm.click();
+    const input = xterm.locator(".xterm-helper-textarea");
+    await input.focus();
+    await expect(input).toBeFocused();
     // xterm forwards each key through a PTY. A zero-delay burst can overrun
     // that bridge under hosted CI load, which drops characters before the
     // shell has consumed them. A small delay keeps the command intact while

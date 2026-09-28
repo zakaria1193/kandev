@@ -41,9 +41,10 @@ test.describe("SSH repository secrets", () => {
       await session.waitForLoad();
       await session.clickTab("Terminal");
       await session.expectTerminalConnected(30_000);
-      await session.typeInTerminal(
-        'if [ -n "$E2E_SSH_SECRET" ]; then printf ssh-approved-present; fi',
-      );
+      const approvedSecretProbe =
+        'if [ -n "$E2E_SSH_SECRET" ]; then printf ssh-approved-present; fi';
+      await session.typeInTerminal(approvedSecretProbe);
+      await session.expectTerminalHasText("E2E_SSH_SECRET");
       await session.expectTerminalHasText("ssh-approved-present");
       await session.typeInTerminal(
         'if [ -n "$E2E_UNRELATED_PROFILE" ]; then printf unrelated-present; else printf unrelated-absent; fi',

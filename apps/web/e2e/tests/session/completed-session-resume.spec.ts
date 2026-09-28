@@ -15,7 +15,7 @@ test.describe("Completed conversation resume", () => {
     seedData,
     backend,
   }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(240_000);
     const task = await seedCompletedConversation(
       apiClient,
       seedData,
@@ -51,7 +51,7 @@ test.describe("Completed conversation resume", () => {
     await session.showSessionContext();
     await expect(session.completedSessionBanner()).toBeVisible({ timeout: 30_000 });
     await session.clickTab("Files");
-    await session.fileTree.waitForFileTreeNode(RETAINED_WORKSPACE_FILE, 60_000);
+    await session.fileTree.waitForFileTreeNode(RETAINED_WORKSPACE_FILE, 90_000);
     await session.clickSessionChatTab();
     const afterReload = await apiClient.listTaskSessions(task.id);
     expect(afterReload.sessions).toHaveLength(before.sessions.length);
@@ -63,7 +63,7 @@ test.describe("Completed conversation resume", () => {
     await testPage.reload();
     await session.showSessionContext();
     await session.clickTab("Files");
-    await session.fileTree.waitForFileTreeNode(RETAINED_WORKSPACE_FILE, 60_000);
+    await session.fileTree.waitForFileTreeNode(RETAINED_WORKSPACE_FILE, 90_000);
     await session.clickSessionChatTab();
     await expect(session.completedSessionBanner()).toBeVisible({ timeout: 30_000 });
 

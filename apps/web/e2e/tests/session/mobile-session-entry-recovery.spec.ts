@@ -15,8 +15,6 @@ async function createEntryTask(apiClient: ApiClient, seedData: SeedData, title: 
 }
 
 test.describe("mobile session entry recovery", () => {
-  test.describe.configure({ retries: 1 });
-
   test("keeps cached access while history recovers with phone-sized controls", async ({
     testPage,
     apiClient,
@@ -40,7 +38,6 @@ test.describe("mobile session entry recovery", () => {
     const historyNotice = chat.getByTestId("session-history-unavailable");
     await expect(historyNotice).toBeVisible({ timeout: 45_000 });
     expect(proxy.rejectedResponseCount("message.list")).toBeGreaterThan(0);
-    proxy.releaseRejectedResponses("message.list");
 
     const retry = historyNotice.getByTestId("session-history-retry");
     const retryBox = await retry.boundingBox();
@@ -50,6 +47,10 @@ test.describe("mobile session entry recovery", () => {
     expect(detailsBox?.height).toBeGreaterThanOrEqual(44);
     await assertNoDocumentHorizontalOverflow(testPage, "mobile session history recovery");
 
+    // Keep the simulated outage in place until after validating the retry
+    // controls. Otherwise an already-scheduled history refresh can succeed
+    // between releasing the route and measuring the phone-sized buttons.
+    proxy.releaseRejectedResponses("message.list");
     await retry.click();
     await expect(historyNotice).toHaveCount(0);
     await expect(chat).toContainText("simple mock response", { timeout: 30_000 });

@@ -172,12 +172,7 @@ function useFileMenuDeleteHandler({
         item instanceof HTMLElement
           ? (item.closest('[data-slot="context-menu-content"]') as HTMLElement | null)
           : null;
-      if (isBulk || !isFinePointer) {
-        handleDelete();
-      } else {
-        // Let the 100 ms context-menu exit animation finish before anchoring the popover.
-        setTimeout(handleDelete, 150);
-      }
+      if (isBulk || !isFinePointer) handleDelete();
     },
     [handleDelete, isBulk, isFinePointer, contextMenuRef],
   );
@@ -278,8 +273,12 @@ function FileContextMenuSurface({
             onUploadFilesHere={onUploadFilesHere}
             onStartRename={handleStartRename}
             onDelete={(event) => {
-              if (isMobile && !isBulk) deletePendingRef.current = true;
-              else onDelete(event);
+              if (isMobile && !isBulk) {
+                deletePendingRef.current = true;
+              } else {
+                if (!isBulk && isFinePointer) deletePendingRef.current = true;
+                onDelete(event);
+              }
             }}
           />
         </ContextMenuContent>
