@@ -12,9 +12,10 @@ type UpdateNotification = {
 };
 
 type E2EStoreWindow = Window & {
+  __KANDEV_E2E_EXPOSE_STORE__?: boolean;
   __KANDEV_E2E_STORE__?: {
     getState: () => {
-      setUpdateAvailableNotification: (notification: UpdateNotification | null) => void;
+      setUpdateAvailableNotification: (notification: UpdateNotification) => void;
     };
   };
 };
@@ -65,6 +66,9 @@ test.describe("Mobile clarification multiline answer", () => {
     apiClient,
     seedData,
   }) => {
+    await testPage.addInitScript(() => {
+      (window as E2EStoreWindow).__KANDEV_E2E_EXPOSE_STORE__ = true;
+    });
     const session = await seedClarificationSession(
       testPage,
       apiClient,
@@ -86,10 +90,10 @@ test.describe("Mobile clarification multiline answer", () => {
         store.getState().setUpdateAvailableNotification(notification);
       },
       {
-        version: "e2e-mobile-toast",
+        version: "v9.9.9-e2e",
         title: "Kandev update available",
-        body: "A newer Kandev release is available.",
-        occurrence_id: "e2e-mobile-toast",
+        body: "Kandev v9.9.9-e2e is available. Open Settings > System > Updates to review it.",
+        occurrence_id: "mobile-clarification-hit-target",
       },
     );
     const updateToast = testPage
@@ -97,7 +101,7 @@ test.describe("Mobile clarification multiline answer", () => {
       .filter({ hasText: "Kandev update available" })
       .last();
     await expect(updateToast).toContainText("Kandev update available");
-    await expect(updateToast).toContainText("A newer Kandev release is available.");
+    await expect(updateToast).toContainText("Kandev v9.9.9-e2e is available.");
     const submit = testPage.getByTestId("submit-message-button");
     const nav = testPage.getByTestId("session-mobile-bottom-nav");
     const [submitBox, navBox, toastBox] = await Promise.all([
