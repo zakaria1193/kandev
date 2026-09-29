@@ -79,7 +79,7 @@ upstream. One row per topic branch.
 
 | Topic branch | What | Kind (config / plugin / new files / seam) | Upstream files touched | Upstream PR |
 |---|---|---|---|---|
-| `fork/unlisted-model` | Let a profile run a model id the CLI accepts but the ACP catalog does not list (e.g. `claude-opus-5-5`) | seam + flag | — | — |
+| `fork/unlisted-model` | Let a profile run a model id the CLI accepts but the ACP catalog does not list (e.g. `claude-opus-5-5`): lifecycle tries it before the fallback rules, and agentctl stops refusing it locally so the agent decides | seam + flag `KANDEV_FORK_UNLISTED_MODELS` (default off) | `lifecycle/start_model.go` (4 lines), `agentctl/server/adapter/transport/acp/adapter_session.go` (2 lines) | — |
 | `fork/slack-notify` | Slack provider, step-change events, workspace → channel routing | new files + seam | — | — |
 | `kandev-plugin-slack` fork | Spec questions posted to a Slack thread; the reply answers them | plugin | none | — |
 | `fork/office-schedule` | Scheduled CEO/CTO agents via Office mode routines | config first; seams only if broken | — | — |
