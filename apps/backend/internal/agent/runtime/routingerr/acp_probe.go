@@ -87,6 +87,10 @@ func (p *ACPProbe) Probe(ctx context.Context, in ProbeInput) *Error {
 		})
 	}
 
+	if argv, ok = prepareProbeArgs(argv); !ok { // fork(office-schedule): resolve managed npm prefix
+		return Classify(Input{Phase: PhaseAuthCheck, ProviderID: in.ProviderID,
+			Stderr: "acp-probe: managed npm project prefix could not be prepared"})
+	}
 	cmd := exec.CommandContext(pCtx, argv[0], argv[1:]...)
 	if len(env) > 0 {
 		cmd.Env = mergeEnv(env)
