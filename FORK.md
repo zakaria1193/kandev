@@ -72,7 +72,29 @@ make -C apps/backend test && (cd apps && pnpm -r test)   # then deploy
 A conflict outside a `fork(` seam means a rule above was broken: fix the
 patch so the next rebase is clean, not just this one.
 
-## 5. Patch inventory
+## 5. CI on the fork
+
+Workflows that need upstream-only secrets, deploy targets, registries or
+bots are **disabled on the fork** (a repo setting, so the workflow files stay
+untouched): Published Docs, Plugin Registry Index / Curated Release Poll /
+Star Refresh, release, universal-rebuild, Update managed runtime pins,
+CI base image (pushes to `ghcr.io/kdlbs`), Claude Code, Claude Code Review,
+OpenCode Code Review, PR Walkthrough (+ Reconcile), Preview Environment.
+List or undo with `gh workflow list --all` / `gh workflow enable <name>`.
+
+Everything else must be green on `main`. After a rebase and push:
+
+```bash
+gh run list -R zakaria1193/kandev -b main -L 15    # Backend/Frontend/E2E take ~30 min
+gh run view <id> -R zakaria1193/kandev --log-failed
+```
+
+A red run is either ours (fix it in the topic branch) or also red upstream
+(`gh run list -R kdlbs/kandev --commit <sha>`); never fix it by editing a
+workflow. `AGENTS.md` is at upstream's 300-line harness limit: add nothing
+to it, the FORK.md pointer lives on its existing Purpose line.
+
+## 6. Patch inventory
 
 Keep this table current: it is the list of everything we would lose or send
 upstream. One row per topic branch.
@@ -80,7 +102,7 @@ upstream. One row per topic branch.
 | Topic branch | What | Kind (config / plugin / new files / seam) | Upstream files touched | Upstream PR |
 |---|---|---|---|---|
 | `fork/unlisted-model` | Let a profile run a model id the CLI accepts but the ACP catalog does not list (e.g. `claude-opus-5-5`): lifecycle tries it before the fallback rules, and agentctl stops refusing it locally so the agent decides | seam + flag `KANDEV_FORK_UNLISTED_MODELS` (default off) | `lifecycle/start_model.go` (4 lines), `agentctl/server/adapter/transport/acp/adapter_session.go` (2 lines) | — |
-| `fork/slack-notify` | Slack provider (`type: slack`, channel per workspace id/name, token via secret/env), `task.step_entered` + `task.completed` events derived from existing bus events, clarification question text + in-memory Slack ts index | new files + seam | `internal/notifications/service/service.go` (+4/−1), `internal/backendapp/gateway.go` (1 line), `internal/backendapp/main.go` (+1) | — |
+| `fork/slack-notify` | Slack provider (`type: slack`, channel per workspace id/name, token via secret/env), `task.step_entered` + `task.completed` events derived from existing bus events, clarification question text + in-memory Slack ts index; the new events are listed in the settings UI only with flag `KANDEV_FORK_SLACK_EVENTS=true` (default off), always subscribable via the API | new files + seam | `internal/notifications/service/service.go` (+4/−1), `internal/backendapp/gateway.go` (1 line), `internal/backendapp/main.go` (+1) | — |
 | `kandev-plugin-slack` fork (`feat/clarification-threads`) | Agent questions posted to the workspace's Slack channel as a thread; an allow-listed reply answers them (via `POST /api/v1/clarification/<id>/respond` + a PAT, since plugins may not answer) | plugin | none (optional ~15-line seam in `plugins/host_interactions.go` would drop the PAT) | — |
 | `fork/office-schedule` | Scheduled Office agents (CEO/CTO): answer permission requests of taskless run sessions (flag `KANDEV_FORK_OFFICE_TASKLESS_PERMISSIONS`, default off; auto-approve candidates only), and resolve the managed npm prefix before the routing recovery probe (plain bug fix, upstreamable) | new files + seam | `internal/agent/runtime/lifecycle/manager_events.go` (+1), `internal/agent/runtime/routingerr/acp_probe.go` (+4) | — |
 
