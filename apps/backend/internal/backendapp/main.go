@@ -1083,6 +1083,7 @@ func startGatewayAndServe(
 		log.Error("Failed to initialize WebSocket gateway", zap.Error(err))
 		return false
 	}
+	wireForkSlackNotify(log, eventBus, notificationSvc, repos.Workflow, repos.Task, repos.Secrets) // fork(slack-notify)
 
 	gateways.RegisterSessionStreamNotifications(ctx, eventBus, gateway.Hub, log)
 	if cfg.Features.Canvases {

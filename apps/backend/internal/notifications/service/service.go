@@ -66,6 +66,7 @@ func NewService(repo notificationstore.Repository, taskRepo TaskContextReader, h
 	providerMap := map[models.ProviderType]providers.Provider{
 		models.ProviderTypeLocal:   providers.NewLocalProvider(hub),
 		models.ProviderTypeApprise: providers.NewAppriseProvider(),
+		models.ProviderTypeSlack:   providers.NewSlackProvider(), // fork(slack-notify): register Slack provider
 	}
 	if os.Getenv(desktopNativeNotificationsEnv) != "true" {
 		providerMap[models.ProviderTypeSystem] = providers.NewSystemProvider()
@@ -89,7 +90,7 @@ func (s *Service) AppriseAvailable() bool {
 }
 
 func (s *Service) AvailableEvents() []string {
-	return []string{EventTaskSessionTurnFinished, EventTaskSessionClarificationAsked, EventOfficeInboxItem, EventSystemUpdateAvailable}
+	return append([]string{EventTaskSessionTurnFinished, EventTaskSessionClarificationAsked, EventOfficeInboxItem, EventSystemUpdateAvailable}, forkNotificationEvents...) // fork(slack-notify)
 }
 
 func (s *Service) ListProviders(ctx context.Context, userID string) ([]*models.Provider, map[string][]string, error) {
@@ -589,6 +590,8 @@ func (s *Service) validateEvents(events []string) error {
 		EventTaskSessionClarificationAsked: {},
 		EventOfficeInboxItem:               {},
 		EventSystemUpdateAvailable:         {},
+		EventTaskStepEntered:               {}, // fork(slack-notify): step-change events
+		EventTaskCompleted:                 {}, // fork(slack-notify)
 	}
 	for _, event := range events {
 		if _, ok := allowed[event]; !ok {
