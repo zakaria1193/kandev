@@ -9,7 +9,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/kandev/kandev/internal/notifications/models"
 	"github.com/kandev/kandev/internal/notifications/providers"
@@ -23,8 +25,23 @@ const (
 	EventTaskCompleted = providers.SlackEventTaskCompleted
 )
 
-// forkNotificationEvents are appended to AvailableEvents.
+// forkNotificationEvents are appended to AvailableEvents when
+// ForkSlackEventsEnv is on.
 var forkNotificationEvents = []string{EventTaskStepEntered, EventTaskCompleted}
+
+// ForkSlackEventsEnv lists the fork events in AvailableEvents (the settings
+// UI). Off by default so upstream's UI and its i18n coverage tests are
+// unchanged; the events stay subscribable through the API either way.
+const ForkSlackEventsEnv = "KANDEV_FORK_SLACK_EVENTS"
+
+// forkAvailableEvents returns the fork events to list, or nil when the flag is off.
+func forkAvailableEvents() []string {
+	on, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(ForkSlackEventsEnv)))
+	if err != nil || !on {
+		return nil
+	}
+	return forkNotificationEvents
+}
 
 // TaskStepEntered describes one committed workflow-step transition.
 // TransitionID is the step-transition ledger id; it makes the notification

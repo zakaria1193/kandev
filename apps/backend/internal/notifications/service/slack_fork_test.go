@@ -118,7 +118,20 @@ func stepEntered(transitionID int64) TaskStepEntered {
 	}
 }
 
+func TestForkEventsHiddenFromAvailableEventsByDefault(t *testing.T) {
+	t.Setenv(ForkSlackEventsEnv, "")
+	h := newForkSlackHarness(t)
+	available := h.svc.AvailableEvents()
+	for _, event := range []string{EventTaskStepEntered, EventTaskCompleted} {
+		if containsEvent(available, event) {
+			t.Errorf("AvailableEvents() = %v, must not list %s with the flag off", available, event)
+		}
+	}
+	h.seedSlack(t, nil, EventTaskStepEntered, EventTaskCompleted)
+}
+
 func TestForkEventsAreAvailableAndSubscribable(t *testing.T) {
+	t.Setenv(ForkSlackEventsEnv, "true")
 	h := newForkSlackHarness(t)
 	available := h.svc.AvailableEvents()
 	for _, event := range []string{EventTaskStepEntered, EventTaskCompleted, EventTaskSessionClarificationAsked} {
