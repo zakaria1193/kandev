@@ -971,6 +971,7 @@ func (m *Manager) handleAgentEventWithoutPublication(execution *AgentExecution, 
 			zap.String("pending_id", event.PendingID),
 			zap.String("title", event.PermissionTitle))
 		m.eventPublisher.PublishPermissionRequest(execution, *event)
+		m.forkAnswerRunOwnedPermission(execution, *event) // fork(office-schedule): taskless runs have no UI to answer
 		return true
 	case "context_window":
 		m.handleContextWindowEvent(execution, *event)
