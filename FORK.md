@@ -80,8 +80,8 @@ upstream. One row per topic branch.
 | Topic branch | What | Kind (config / plugin / new files / seam) | Upstream files touched | Upstream PR |
 |---|---|---|---|---|
 | `fork/unlisted-model` | Let a profile run a model id the CLI accepts but the ACP catalog does not list (e.g. `claude-opus-5-5`): lifecycle tries it before the fallback rules, and agentctl stops refusing it locally so the agent decides | seam + flag `KANDEV_FORK_UNLISTED_MODELS` (default off) | `lifecycle/start_model.go` (4 lines), `agentctl/server/adapter/transport/acp/adapter_session.go` (2 lines) | — |
-| `fork/slack-notify` | Slack provider, step-change events, workspace → channel routing | new files + seam | — | — |
-| `kandev-plugin-slack` fork | Spec questions posted to a Slack thread; the reply answers them | plugin | none | — |
+| `fork/slack-notify` | Slack provider (`type: slack`, channel per workspace id/name, token via secret/env), `task.step_entered` + `task.completed` events derived from existing bus events, clarification question text + in-memory Slack ts index | new files + seam | `internal/notifications/service/service.go` (+4/−1), `internal/backendapp/gateway.go` (1 line), `internal/backendapp/main.go` (+1) | — |
+| `kandev-plugin-slack` fork (`feat/clarification-threads`) | Agent questions posted to the workspace's Slack channel as a thread; an allow-listed reply answers them (via `POST /api/v1/clarification/<id>/respond` + a PAT, since plugins may not answer) | plugin | none (optional ~15-line seam in `plugins/host_interactions.go` would drop the PAT) | — |
 | `fork/office-schedule` | Scheduled CEO/CTO agents via Office mode routines | config first; seams only if broken | — | — |
 
 Fill in "upstream files touched" from `git diff --stat upstream/main...fork/<topic>`.
