@@ -458,7 +458,7 @@ func provideGateway(
 			if !eligible {
 				return nil
 			}
-			notificationSvc.HandleClarificationRequested(ctx, taskID, sessionID, pendingID)
+			notificationSvc.HandleClarificationRequestedWithQuestion(ctx, taskID, sessionID, pendingID, clarificationQuestionText(data)) // fork(slack-notify)
 			return nil
 		})
 		if err != nil {
