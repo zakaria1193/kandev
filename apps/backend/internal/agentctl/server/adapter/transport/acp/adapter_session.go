@@ -1269,7 +1269,8 @@ func (a *Adapter) setModelWithConn(
 	}
 
 	// Validate model exists in the agent's available models (if known).
-	if len(available) > 0 {
+	// fork(unlisted-model): when enabled, the agent itself judges unlisted ids.
+	if len(available) > 0 && !forkUnlistedModelsEnabled() {
 		if err := validateAvailableModel(available, modelID); err != nil {
 			return err
 		}

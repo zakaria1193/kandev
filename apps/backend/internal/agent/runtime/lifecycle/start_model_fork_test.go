@@ -56,3 +56,31 @@ func TestForkUnlistedModelRefusedFallsBackToUpstreamRules(t *testing.T) {
 		t.Fatalf("outcome = %q, want explicit fallback", decision.Outcome)
 	}
 }
+
+func TestForkUnlistedModelDecisionWarnsOnlyWhenNotApplied(t *testing.T) {
+	cases := []struct {
+		name        string
+		flag        string
+		setModelErr error
+		wantWarning bool
+		wantReason  string
+	}{
+		{"flag off keeps the upstream warning", "", nil, true, ModelSelectionReasonRequestedNotAdvertised},
+		{"refused keeps the upstream warning", "true", errors.New("not listed"), true, ModelSelectionReasonRequestedNotAdvertised},
+		{"applied unlisted model has no warning", "true", nil, false, ModelSelectionReasonUnlistedModelApplied},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv(ForkUnlistedModelsEnv, tc.flag)
+			applier := &fakeModelApplier{errs: []error{tc.setModelErr}}
+			decision, err := applyStartModelPolicy(context.Background(), newPolicyTestLogger(), applier,
+				modelState("default", "sonnet"), StartModelPolicy{Model: "claude-opus-5-5", AutoFallback: true})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if decision.Warning != tc.wantWarning || decision.Reason != tc.wantReason {
+				t.Fatalf("decision = %+v, want warning=%v reason=%q", decision, tc.wantWarning, tc.wantReason)
+			}
+		})
+	}
+}
