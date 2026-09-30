@@ -1,0 +1,67 @@
+name: Fork smoke
+
+# fork(ci-smoke): the only CI this fork runs. Upstream's workflows are disabled
+# in the fork's Actions settings (not edited, so rebases stay clean); one push
+# of the full upstream suite costs ~45 jobs and ~9 runner-hours. This checks
+# that the backend builds, the fork's own tests pass and the web app
+# type-checks. Upstream's full suite still runs on upstream PRs.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend build + fork tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: apps/backend/go.mod
+          cache-dependency-path: apps/backend/go.sum
+      - name: Build
+        run: go build ./...
+      - name: Fork tests
+        # Only the tests in *_fork_test.go files, by name, in their packages.
+        run: |
+          files=$(git ls-files '*_fork_test.go')
+          [ -n "$files" ] || { echo "no fork tests"; exit 0; }
+          names=$(grep -ho '^func Test[A-Za-z0-9_]*' $files | sed 's/^func //' | sort -u | paste -sd'|')
+          pkgs=$(for f in $files; do echo "./$(dirname "$f")"; done | sort -u)
+          go test -count=1 -run "^(${names})\$" $pkgs
+
+  web:
+    name: Web type-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a8198c4bff370c8506180b035930dea56dbd5288 # v5
+        with:
+          package_json_file: apps/package.json
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @kandev/web typecheck
