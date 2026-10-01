@@ -19,6 +19,24 @@ type fastPathTaskReadRetryRepo struct {
 	failNext atomic.Bool
 }
 
+func newFastPathDispatchService(t *testing.T, repo *sqliterepo.Repository) *Service {
+	t.Helper()
+	seedExecutorRunning(t, repo, "s1", "t1", "exec-1")
+	agentManager := &mockAgentManager{isAgentRunning: true, repoForExecutionLookup: repo}
+	svc := createTestServiceWithAgent(repo, newMockStepGetter(), newMockTaskRepo(), agentManager)
+	svc.executor = executor.NewExecutor(agentManager, repo, testLogger(), executor.ExecutorConfig{})
+	workerDone := make(chan struct{})
+	svc.onQueuedMessageExecutionComplete = func() { close(workerDone) }
+	t.Cleanup(func() {
+		select {
+		case <-workerDone:
+		case <-time.After(5 * time.Second):
+			t.Error("timed out waiting for fast-path dispatch worker")
+		}
+	})
+	return svc
+}
+
 func (r *fastPathTaskReadRetryRepo) GetTask(ctx context.Context, taskID string) (*models.Task, error) {
 	if r.failNext.CompareAndSwap(true, false) {
 		return nil, errors.New("transient task read failure")
@@ -48,15 +66,13 @@ func TestQueueUserPromptRejectsTerminalSession(t *testing.T) {
 // is not in WIP-wait. The drain uses the existing public helper
 // drainQueuedMessageForPromptableSession.
 //
-// The unit test only verifies the T2 call site is reached (drain's
-// ReserveQueued removes the head from the queue, so count drops to
-// 0). The downstream dispatch (promptTask) requires a working mock
-// agent; full e2e is covered by integration tests.
+// ReserveQueued removes the head from the queue, so count drops to 0.
+// The mock dispatch worker completes before fixture teardown.
 func TestQueueUserPrompt_T2FastPathDrainsPromptableSession(t *testing.T) {
 	ctx := context.Background()
 	repo := setupTestRepo(t)
 	seedTaskAndSession(t, repo, "t1", "s1", models.TaskSessionStateWaitingForInput)
-	svc := createTestService(repo, newMockStepGetter(), newMockTaskRepo())
+	svc := newFastPathDispatchService(t, repo)
 
 	if got := svc.messageQueue.GetStatus(ctx, "s1").Count; got != 0 {
 		t.Fatalf("pre-condition: queue count = %d, want 0", got)
@@ -67,8 +83,8 @@ func TestQueueUserPrompt_T2FastPathDrainsPromptableSession(t *testing.T) {
 	// drainQueuedMessageForPromptableSession reserves the head before
 	// dispatching. The reservation removes the entry from the queue,
 	// so the count drops to 0 once T2's fast-path drain is reached.
-	// The downstream dispatch may fail (mock agent can't resume) but
-	// the count==0 invariant pins the T2 call site.
+	// The downstream dispatch may fail, but the count==0 invariant pins the T2
+	// call site and the fixture waits for the worker before teardown.
 	if got := svc.messageQueue.GetStatus(ctx, "s1").Count; got != 0 {
 		t.Fatalf("post-enqueue queue count = %d, want 0 (T2 fast-path did not drain)", got)
 	}
@@ -108,7 +124,7 @@ func TestQueueUserPrompt_T2DrainsAfterClarificationDetachedWithEmptyQueue(t *tes
 	if err := repo.UpdateMessage(ctx, message); err != nil {
 		t.Fatalf("mark clarification detached: %v", err)
 	}
-	svc := createTestService(repo, newMockStepGetter(), newMockTaskRepo())
+	svc := newFastPathDispatchService(t, repo)
 
 	if err := svc.QueueUserPrompt(ctx, "t1", "s1", "after-detach", "", false, nil, map[string]interface{}{}, true); err != nil {
 		t.Fatalf("QueueUserPrompt: %v", err)
@@ -122,7 +138,7 @@ func TestQueueUserPrompt_T2RetriesTaskAdmissionReadAfterPromotion(t *testing.T) 
 	ctx := context.Background()
 	repo := setupTestRepo(t)
 	seedTaskAndSession(t, repo, "t1", "s1", models.TaskSessionStateWaitingForInput)
-	svc := createTestService(repo, newMockStepGetter(), newMockTaskRepo())
+	svc := newFastPathDispatchService(t, repo)
 	retryRepo := &fastPathTaskReadRetryRepo{Repository: repo}
 	retryRepo.failNext.Store(true)
 	svc.repo = retryRepo
@@ -258,6 +274,8 @@ func TestQueueUserPrompt_T2DrainsWhenTaskAdmitted(t *testing.T) {
 	}
 	svc := createTestServiceWithAgent(repo, newMockStepGetter(), newMockTaskRepo(), manager)
 	svc.executor = executor.NewExecutor(manager, repo, testLogger(), executor.ExecutorConfig{})
+	workerDone := make(chan struct{})
+	svc.onQueuedMessageExecutionComplete = func() { close(workerDone) }
 
 	if err := svc.QueueUserPrompt(ctx, "t1", "s1", "admitted-task", "", false, nil, map[string]interface{}{}, true); err != nil {
 		t.Fatalf("QueueUserPrompt: %v", err)
@@ -275,4 +293,9 @@ func TestQueueUserPrompt_T2DrainsWhenTaskAdmitted(t *testing.T) {
 	require.Eventually(t, func() bool {
 		return !svc.isQueuedDispatchInFlight("s1")
 	}, 5*time.Second, 10*time.Millisecond, "fast-path dispatch did not settle before test cleanup")
+	select {
+	case <-workerDone:
+	case <-time.After(5 * time.Second):
+		t.Fatal("fast-path dispatch worker did not finish before test cleanup")
+	}
 }

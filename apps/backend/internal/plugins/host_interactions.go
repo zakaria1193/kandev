@@ -139,6 +139,9 @@ func (r interactionReader) RespondToPermission(
 func (r interactionReader) AnswerClarification(
 	ctx context.Context, in pluginsdk.ClarificationResponse,
 ) (*pluginsdk.Interaction, error) {
+	if forkDelegatedClarificationAllowed(r.host.pluginID) { // fork(slack-clarify): see FORK.md
+		return r.forkAnswerClarification(ctx, in)
+	}
 	return nil, r.host.exactHumanResponseRequired()
 }
 
